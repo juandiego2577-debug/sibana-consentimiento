@@ -1,1 +1,760 @@
-$(cat /tmp/claude-0/-home-user-agenda-sibana/245173dc-e140-56a4-9e45-39ddfe617ffc/scratchpad/consentimiento/index.html)
+<style>
+  :root{
+    --bg:#161310;
+    --bg-elev:#1f1a14;
+    --panel:#221c15;
+    --gold:#c8a24e;
+    --gold-dim:#8f7439;
+    --cream:#f3ead6;
+    --muted:#a89a83;
+    --line:rgba(243,234,214,0.13);
+    --rose:#b1604a;
+    --sage:#6f8266;
+    --radius:2px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--cream);font-family:Georgia,'Iowan Old Style','Palatino Linotype',serif;}
+  .app{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:28px 18px 70px;}
+  .sans{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;}
+
+  .brand{text-align:center;margin-bottom:6px;}
+  .brand .mark{font-family:Georgia,serif;font-style:italic;font-size:34px;color:var(--gold);letter-spacing:1px;}
+  .brand .sub{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.14em;color:var(--muted);margin-top:2px;}
+
+  .wrap{width:100%;max-width:540px;}
+
+  .progress{display:flex;align-items:center;justify-content:center;gap:6px;margin:26px 0 30px;}
+  .progress .seg{flex:1;height:2px;background:var(--line);position:relative;max-width:52px;}
+  .progress .seg.done{background:var(--gold);}
+  .progress .seg.current{background:var(--gold-dim);}
+
+  .stepnum{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.14em;color:var(--gold);margin-bottom:4px;}
+  h1.step-title{font-size:26px;font-weight:400;margin:0 0 4px;color:var(--cream);}
+  p.step-desc{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13.5px;color:var(--muted);margin:0 0 26px;line-height:1.5;}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px;margin-bottom:14px;}
+  .card h2{font-size:16px;font-weight:400;color:var(--gold);margin:0 0 16px;letter-spacing:.01em;}
+
+  .field{margin-bottom:16px;}
+  .field:last-child{margin-bottom:0;}
+  label{display:block;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12.5px;color:var(--muted);margin-bottom:6px;}
+  input[type=text],input[type=tel],input[type=email],input[type=number],input[type=date],input[type=search],textarea{
+    width:100%;background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--radius);
+    padding:11px 12px;color:var(--cream);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14.5px;
+  }
+  input:focus,textarea:focus{outline:none;border-color:var(--gold-dim);}
+  textarea{min-height:54px;resize:vertical;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:420px){.row3{grid-template-columns:1fr 1fr;}}
+
+  .yn-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);}
+  .yn-row:last-child{border-bottom:none;}
+  .yn-row .yn-label{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;color:var(--cream);padding-right:10px;}
+  .yn-toggle{display:flex;gap:6px;flex-shrink:0;}
+  .yn-btn{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12.5px;padding:7px 14px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;}
+  .yn-btn.active-si{background:rgba(200,162,78,.16);border-color:var(--gold-dim);color:var(--gold);}
+  .yn-btn.active-no{background:rgba(111,130,102,.16);border-color:var(--sage);color:var(--sage);}
+  .detail-field{margin-top:10px;display:none;}
+  .detail-field.show{display:block;}
+
+  .care-list{list-style:none;margin:0;padding:0;}
+  .care-list li{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13.5px;color:var(--cream);line-height:1.55;padding:9px 0 9px 20px;border-bottom:1px solid var(--line);position:relative;}
+  .care-list li:last-child{border-bottom:none;}
+  .care-list li::before{content:'—';position:absolute;left:0;color:var(--gold-dim);}
+  .legal-box{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12.5px;color:var(--muted);line-height:1.6;background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-top:14px;}
+
+  .consent-text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13.5px;color:var(--cream);line-height:1.7;}
+
+  .checkline{display:flex;align-items:flex-start;gap:10px;margin-top:16px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;color:var(--cream);line-height:1.5;cursor:pointer;}
+  .checkline input{margin-top:3px;width:16px;height:16px;accent-color:var(--gold);flex-shrink:0;}
+
+  .sig-box{background:#fdfaf3;border-radius:var(--radius);border:1px solid var(--line);overflow:hidden;touch-action:none;}
+  canvas#sigpad{display:block;width:100%;height:170px;}
+  .sig-controls{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+  .sig-hint{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:11.5px;color:var(--muted);}
+  .linklike{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12px;color:var(--gold);background:none;border:none;cursor:pointer;padding:0;}
+
+  .nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:12px;}
+  .btn{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13.5px;letter-spacing:.03em;padding:13px 26px;border-radius:20px;border:1px solid var(--gold-dim);background:transparent;color:var(--gold);cursor:pointer;transition:background .15s;}
+  .btn.primary{background:var(--gold);color:#1a1610;border-color:var(--gold);font-weight:600;}
+  .btn.primary:hover{background:#d8b464;}
+  .btn.ghost{border-color:var(--line);color:var(--muted);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+  .btn:active{transform:scale(0.98);}
+  .btn.block{width:100%;text-align:center;}
+
+  .err{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--rose);font-size:12px;margin-top:10px;display:none;}
+  .err.show{display:block;}
+
+  .done-screen{text-align:center;padding:40px 10px;}
+  .done-screen .mark{font-size:42px;color:var(--gold);font-style:italic;margin-bottom:12px;}
+  .done-screen p{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--muted);font-size:14px;line-height:1.6;}
+  .code-chip{display:inline-block;margin:18px 0;padding:10px 20px;border:1px solid var(--gold-dim);border-radius:20px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--gold);font-size:13px;letter-spacing:.06em;}
+  .done-actions{display:flex;flex-direction:column;gap:10px;margin-top:22px;}
+
+  .admin-toggle{position:fixed;bottom:14px;right:14px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:10.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:7px 12px;cursor:pointer;opacity:.55;}
+  .admin-toggle:hover{opacity:1;}
+
+  .modal-back{position:fixed;inset:0;background:rgba(10,8,6,.78);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:24px;max-width:380px;width:100%;}
+  .modal h3{margin:0 0 12px;font-weight:400;color:var(--gold);}
+
+  .admin-view{width:100%;max-width:720px;}
+  .admin-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .search-row{margin-bottom:18px;}
+  .entry{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;cursor:pointer;}
+  .entry-top{display:flex;justify-content:space-between;align-items:center;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;gap:10px;}
+  .entry-name{font-size:15px;color:var(--cream);}
+  .entry-meta{font-size:11.5px;color:var(--muted);text-align:right;}
+  .entry-body{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12.5px;color:var(--cream);}
+  .entry.open .entry-body{display:block;}
+  .kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;margin-bottom:3px;}
+  .kv b{color:var(--muted);font-weight:400;}
+  .sig-preview{background:#fdfaf3;border-radius:var(--radius);margin-top:10px;padding:6px;}
+  .sig-preview img{display:block;max-width:220px;}
+  .empty-admin{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--muted);font-size:13px;text-align:center;padding:40px 0;}
+
+  #printSummary{display:none;}
+  @media print{
+    body *{visibility:hidden;}
+    #printSummary, #printSummary *{visibility:visible;}
+    #printSummary{display:block;position:absolute;top:0;left:0;width:100%;padding:24px;color:#1a1610;background:#fff;font-family:Georgia,serif;}
+    #printSummary .pmark{font-style:italic;color:#8f7439;font-size:26px;margin-bottom:4px;}
+    #printSummary h4{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;text-transform:none;color:#8f7439;margin:18px 0 8px;border-bottom:1px solid #ddd;padding-bottom:4px;}
+    #printSummary .pkv{font-family:'Helvetica Neue',Arial,sans-serif;font-size:12px;display:grid;grid-template-columns:180px 1fr;gap:2px 10px;margin-bottom:2px;}
+    #printSummary .pkv b{color:#555;font-weight:400;}
+    #printSummary img.psig{max-width:220px;border:1px solid #ddd;margin-top:6px;}
+  }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.14.1/firebase-app-compat.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.14.1/firebase-firestore-compat.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.14.1/firebase-auth-compat.min.js" crossorigin="anonymous"></script>
+
+<div class="app" id="app"></div>
+<div id="printSummary"></div>
+
+<script>
+// ======================================================
+// Configuración del proyecto Firebase "sibana-santiago"
+// (la misma que usa la Agenda de Santiago)
+// ======================================================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCpmGl31qLkbXU-OAJyK-thqGYOFnAoa-Y",
+  authDomain: "sibana-santiago.firebaseapp.com",
+  projectId: "sibana-santiago",
+  storageBucket: "sibana-santiago.firebasestorage.app",
+  messagingSenderId: "925854566824",
+  appId: "1:925854566824:web:116dde164888fe0217759d"
+};
+
+// Colección propia para las fichas de consentimiento, separada de "sibana-agenda"
+// pero con un nombre consistente dentro del mismo proyecto Firebase.
+const COLLECTION = "sibana-consentimientos";
+// Misma cuenta de equipo que usa la Agenda para el "Panel Sibana" — reemplaza
+// la contraseña que antes estaba escrita en este mismo archivo (visible para
+// cualquiera que viera el código fuente y sin ninguna protección real a nivel
+// de base de datos).
+const TEAM_EMAIL = 'equipo@sibanasantiago.app';
+
+let db, FIREBASE_READY = false;
+try{
+  firebase.initializeApp(FIREBASE_CONFIG);
+  db = firebase.firestore();
+  FIREBASE_READY = true;
+}catch(e){
+  console.error('No se pudo inicializar Firebase', e);
+}
+
+// La clienta que firma nunca inicia sesión a propósito: apenas carga la
+// página, se le abre una sesión anónima invisible (igual que en la Agenda),
+// suficiente para poder CREAR su ficha, pero no para leer las de otras
+// clientas — eso lo exige la regla de Firestore, no esta página.
+let teamAuthed = false;
+if(FIREBASE_READY){
+  firebase.auth().onAuthStateChanged(user=>{
+    teamAuthed = !!(user && !user.isAnonymous);
+    if(!user) firebase.auth().signInAnonymously().catch(err=> console.error('No se pudo abrir sesión anónima', err));
+  });
+}
+
+const STEPS = ["Datos","Historial","Técnica","Cuidados","Firma"];
+const state = {
+  step: 0,
+  fecha: new Date().toISOString().slice(0,10),
+  ciudad:"", nombre:"", rut:"", edad:"", telefono:"", email:"",
+  alergias:null, alergias_detalle:"",
+  diabetes:null, hipertension:null, vih:null, hepatitis:null, enf_inmunes:null,
+  cond_piel:null, cond_piel_detalle:"",
+  herpes:null, herpes_detalle:"",
+  proc_quimicos:"", proc_esteticos:"",
+  n_tratamientos:"", microblading:null, tatuaje:null, tiempo_anterior:"",
+  tecnica:"", diseno_aprobado:null,
+  acepta_cuidados:false,
+  acepta_terminos:false, declara_firma:false,
+  firmaDataUrl:null
+};
+
+const app = document.getElementById('app');
+let saving = false;
+let submitted = false;
+let saveError = null;
+
+function yn(field, label, extra){
+  const val = state[field];
+  return `
+    <div class="yn-row">
+      <div class="yn-label">${label}</div>
+      <div class="yn-toggle">
+        <button type="button" class="yn-btn ${val===true?'active-si':''}" data-yn="${field}" data-val="si">Sí</button>
+        <button type="button" class="yn-btn ${val===false?'active-no':''}" data-yn="${field}" data-val="no">No</button>
+      </div>
+    </div>${extra?extra:""}`;
+}
+function detailField(field, placeholder, show){
+  return `<div class="field detail-field ${show?'show':''}" data-detailfor="${field}">
+    <label>Especificar</label>
+    <textarea data-bind="${field}" placeholder="${placeholder}">${state[field]||""}</textarea>
+  </div>`;
+}
+function progressHtml(){
+  return `<div class="progress">${STEPS.map((_,i)=>{
+    let cls = i < state.step ? 'done' : (i===state.step?'current':'');
+    return `<div class="seg ${cls}"></div>`;
+  }).join('')}</div>`;
+}
+function esc(s){
+  return (s||"").toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function ynLabel(v){ return v===true?'Sí':(v===false?'No':'—'); }
+
+function renderStep0(){
+  return `
+    <div class="stepnum sans">PASO 1 DE 5</div>
+    <h1 class="step-title">Tus datos</h1>
+    <p class="step-desc sans">Esta información queda registrada junto con tu firma en la ficha de Sibana.</p>
+    <div class="card">
+      <div class="field"><label>Nombre completo</label><input type="text" data-bind="nombre" value="${esc(state.nombre)}" placeholder="Nombre y apellidos"></div>
+      <div class="row2">
+        <div class="field"><label>RUT</label><input type="text" data-bind="rut" value="${esc(state.rut)}" placeholder="12.345.678-9"></div>
+        <div class="field"><label>Edad</label><input type="number" data-bind="edad" value="${esc(state.edad)}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Teléfono</label><input type="tel" data-bind="telefono" value="${esc(state.telefono)}"></div>
+        <div class="field"><label>Correo electrónico</label><input type="email" data-bind="email" value="${esc(state.email)}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Fecha</label><input type="date" data-bind="fecha" value="${esc(state.fecha)}"></div>
+        <div class="field"><label>Ciudad</label><input type="text" data-bind="ciudad" value="${esc(state.ciudad)}" placeholder="Copiapó / Santiago"></div>
+      </div>
+    </div>
+    <div class="err sans" id="errbox"></div>
+  `;
+}
+function renderStep1(){
+  return `
+    <div class="stepnum sans">PASO 2 DE 5</div>
+    <h1 class="step-title">Historial médico</h1>
+    <p class="step-desc sans">Esta información nos permite cuidarte mejor durante el procedimiento. Responde con sinceridad.</p>
+    <div class="card">
+      ${yn('alergias','¿Tienes alergias (medicamentos, alimentos, maquillaje, metales)?', detailField('alergias_detalle','¿A qué eres alérgico/a?', state.alergias===true))}
+      ${yn('diabetes','Diabetes')}
+      ${yn('hipertension','Hipertensión')}
+      ${yn('vih','VIH')}
+      ${yn('hepatitis','Hepatitis')}
+      ${yn('enf_inmunes','Enfermedades inmunes / autoinmunes')}
+      ${yn('cond_piel','¿Condiciones de la piel? (acné, rosácea, lupus, queloides)', detailField('cond_piel_detalle','Detalle', state.cond_piel===true))}
+      ${yn('herpes','¿Propenso/a al herpes labial o ampollas de fiebre?', detailField('herpes_detalle','Detalle', state.herpes===true))}
+    </div>
+    <div class="card">
+      <div class="field"><label>Procedimientos químicos realizados recientemente</label><textarea data-bind="proc_quimicos" placeholder="Ej: peeling, ácidos, depilación láser...">${esc(state.proc_quimicos)}</textarea></div>
+      <div class="field"><label>Procedimientos estéticos faciales realizados recientemente</label><textarea data-bind="proc_esteticos">${esc(state.proc_esteticos)}</textarea></div>
+    </div>
+    <div class="err sans" id="errbox"></div>
+  `;
+}
+function renderStep2(){
+  return `
+    <div class="stepnum sans">PASO 3 DE 5</div>
+    <h1 class="step-title">Sobre la técnica</h1>
+    <p class="step-desc sans">Confirma esto junto a tu especialista, ya en el estudio y mirando el diseño aplicado.</p>
+    <div class="card">
+      <div class="row2">
+        <div class="field"><label>N° de tratamientos anteriores</label><input type="number" data-bind="n_tratamientos" value="${esc(state.n_tratamientos)}"></div>
+        <div class="field"><label>Tiempo desde el tratamiento anterior</label><input type="text" data-bind="tiempo_anterior" value="${esc(state.tiempo_anterior)}" placeholder="Ej: 8 meses"></div>
+      </div>
+      ${yn('microblading','¿Microblading?')}
+      ${yn('tatuaje','¿Tatuaje?')}
+    </div>
+    <div class="card">
+      <div class="field"><label>Técnica a realizar</label><input type="text" data-bind="tecnica" value="${esc(state.tecnica)}"></div>
+      ${yn('diseno_aprobado','¿Estás de acuerdo con el color, diseño y grosor que se te está aplicando?')}
+    </div>
+    <div class="err sans" id="errbox"></div>
+  `;
+}
+function renderStep3(){
+  return `
+    <div class="stepnum sans">PASO 4 DE 5</div>
+    <h1 class="step-title">Cuidados posteriores</h1>
+    <p class="step-desc sans">Léelos con atención: seguirlos determina el resultado final de tu micropigmentación.</p>
+    <div class="card">
+      <h2>Higiene y procedimiento</h2>
+      <ul class="care-list">
+        <li>Se emplea material de un solo uso o estéril, desprecintado frente a ti.</li>
+        <li>El área de trabajo y la zona a tratar se limpian y desinfectan antes de comenzar.</li>
+      </ul>
+      <div class="legal-box">Este estudio cumple el Reglamento de Tatuajes y Prácticas Similares (Decreto Supremo N.° 304 de 2002, Ministerio de Salud). Las tintas y pigmentos utilizados no son tóxicos y se ajustan a la Norma Técnica N.° 130 sobre colorantes permitidos en productos cosméticos vigente en Chile.</div>
+    </div>
+    <div class="card">
+      <h2>Después de tu sesión</h2>
+      <ul class="care-list">
+        <li>Lávate las manos antes de tocar la zona tratada.</li>
+        <li>Hidrata solo con la crema indicada por tu especialista, ninguna otra.</li>
+        <li>Evita el agua y el polvo sobre la zona durante una semana.</li>
+        <li>No asistas a la piscina, gimnasio, sauna ni te expongas al sol; usa sombrero o gorra.</li>
+        <li>No rasques ni roces la zona, ni apliques maquillaje sobre ella.</li>
+        <li>No consumas alcohol ni drogas durante la cicatrización: afecta el resultado.</li>
+        <li>Ante cualquier reacción o complicación, acude a la brevedad a un médico.</li>
+        <li>El retoque se realiza entre 30 y 40 días después; pasado ese plazo deja de estar incluido. Si no puedes asistir, avísanos.</li>
+      </ul>
+    </div>
+    <label class="checkline">
+      <input type="checkbox" id="acepta_cuidados" ${state.acepta_cuidados?'checked':''}>
+      <span>He leído y entiendo las medidas de higiene y los cuidados posteriores.</span>
+    </label>
+    <div class="err sans" id="errbox"></div>
+  `;
+}
+function renderStep4(){
+  return `
+    <div class="stepnum sans">PASO 5 DE 5</div>
+    <h1 class="step-title">Consentimiento y firma</h1>
+    <p class="step-desc sans">Última parte. Tu firma queda registrada junto con la fecha y hora de hoy.</p>
+    <div class="card">
+      <p class="consent-text">Declaro que la información entregada en este formulario es verdadera y completa. Manifiesto mi conformidad con la información recibida sobre el procedimiento a realizarme y declaro haber visto y aprobado el diseño propuesto. Estoy en conocimiento de que el color cicatrizará con aproximadamente un 40% a 50% menos intensidad de lo aplicado, y de que el retoque debe realizarse entre 30 y 40 días después de la sesión. Me comprometo a seguir las indicaciones de cuidado posterior.</p>
+      <label class="checkline">
+        <input type="checkbox" id="acepta_terminos" ${state.acepta_terminos?'checked':''}>
+        <span>Acepto los términos anteriores y autorizo la realización del procedimiento.</span>
+      </label>
+    </div>
+    <div class="card">
+      <h2>Firma</h2>
+      <label class="sans">Dibuja tu firma con el dedo o el mouse</label>
+      <div class="sig-box"><canvas id="sigpad"></canvas></div>
+      <div class="sig-controls">
+        <span class="sig-hint">Sibana — ${esc(state.nombre)||'tu nombre'}</span>
+        <button type="button" class="linklike" id="clearSig">Borrar firma</button>
+      </div>
+      <div class="legal-box" style="margin-top:16px;">Al dibujar tu firma y marcar la casilla siguiente, manifiestas tu voluntad de firmar este documento por medios electrónicos, en los términos del artículo 3° de la Ley N.° 19.799 sobre Documentos Electrónicos y Firma Electrónica. Al final podrás descargar tu propia copia.</div>
+      <label class="checkline">
+        <input type="checkbox" id="declara_firma" ${state.declara_firma?'checked':''}>
+        <span>Declaro que firmo este documento electrónicamente y que es mi voluntad expresa.</span>
+      </label>
+    </div>
+    <div class="err sans" id="errbox"></div>
+    ${saveError ? `<div class="err sans show">${esc(saveError)}</div>` : ""}
+  `;
+}
+function renderDone(){
+  return `
+    <div class="done-screen">
+      <div class="mark">Sibana</div>
+      <h1 class="step-title" style="font-size:22px;">Gracias, ${esc(state.nombre.split(' ')[0]||'')}</h1>
+      <p class="sans">Tu ficha y tu firma quedaron registradas. Nos vemos en tu sesión.</p>
+      <p class="sans">Si necesitas algo, en Sibana pueden encontrar tu ficha directamente con tu nombre completo.</p>
+      <div class="done-actions">
+        <button class="btn primary block sans" id="btnDownload">Descargar mi copia (PDF)</button>
+      </div>
+    </div>
+  `;
+}
+
+let sigCanvas, sigCtx, drawing=false, hasSig=false, lastPt=null;
+function setupSignaturePad(){
+  sigCanvas = document.getElementById('sigpad');
+  if(!sigCanvas) return;
+  const ratio = window.devicePixelRatio || 1;
+  const rect = sigCanvas.getBoundingClientRect();
+  sigCanvas.width = rect.width * ratio;
+  sigCanvas.height = rect.height * ratio;
+  sigCtx = sigCanvas.getContext('2d');
+  sigCtx.scale(ratio, ratio);
+  sigCtx.lineWidth = 2;
+  sigCtx.lineCap = 'round';
+  sigCtx.strokeStyle = '#1a1610';
+  if(state.firmaDataUrl){
+    const img = new Image();
+    img.onload = ()=> sigCtx.drawImage(img,0,0,rect.width,rect.height);
+    img.src = state.firmaDataUrl;
+    hasSig = true;
+  }
+  function pos(e){
+    const r = sigCanvas.getBoundingClientRect();
+    const p = e.touches ? e.touches[0] : e;
+    return {x: p.clientX-r.left, y: p.clientY-r.top};
+  }
+  function start(e){ e.preventDefault(); drawing=true; lastPt=pos(e); }
+  function move(e){
+    if(!drawing) return;
+    e.preventDefault();
+    const p = pos(e);
+    sigCtx.beginPath();
+    sigCtx.moveTo(lastPt.x, lastPt.y);
+    sigCtx.lineTo(p.x, p.y);
+    sigCtx.stroke();
+    lastPt = p;
+    hasSig = true;
+  }
+  function end(){ drawing=false; if(hasSig) state.firmaDataUrl = sigCanvas.toDataURL('image/png'); }
+  sigCanvas.addEventListener('mousedown', start);
+  sigCanvas.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', end);
+  sigCanvas.addEventListener('touchstart', start, {passive:false});
+  sigCanvas.addEventListener('touchmove', move, {passive:false});
+  sigCanvas.addEventListener('touchend', end);
+  document.getElementById('clearSig').addEventListener('click', ()=>{
+    sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height);
+    hasSig = false;
+    state.firmaDataUrl = null;
+  });
+}
+
+function bindInputs(){
+  document.querySelectorAll('[data-bind]').forEach(el=>{
+    el.addEventListener('input', ()=>{ state[el.dataset.bind] = el.value; });
+  });
+  document.querySelectorAll('[data-yn]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      state[btn.dataset.yn] = btn.dataset.val === 'si';
+      renderApp();
+    });
+  });
+  const ac = document.getElementById('acepta_cuidados');
+  if(ac) ac.addEventListener('change', e=> state.acepta_cuidados = e.target.checked);
+  const at = document.getElementById('acepta_terminos');
+  if(at) at.addEventListener('change', e=> state.acepta_terminos = e.target.checked);
+  const df = document.getElementById('declara_firma');
+  if(df) df.addEventListener('change', e=> state.declara_firma = e.target.checked);
+}
+function showErr(msg){
+  const box = document.getElementById('errbox');
+  if(box){ box.textContent = msg; box.classList.add('show'); }
+}
+function validaRut(rutStr){
+  const rut = (rutStr||'').replace(/\./g,'').replace(/-/g,'').trim().toUpperCase();
+  if(rut.length < 2) return false;
+  const cuerpo = rut.slice(0,-1);
+  const dv = rut.slice(-1);
+  if(!/^\d+$/.test(cuerpo)) return false;
+  let suma = 0, multiplo = 2;
+  for(let i=cuerpo.length-1;i>=0;i--){
+    suma += parseInt(cuerpo[i],10)*multiplo;
+    multiplo = multiplo<7 ? multiplo+1 : 2;
+  }
+  const resto = 11 - (suma % 11);
+  const dvEsperado = resto===11 ? '0' : resto===10 ? 'K' : String(resto);
+  return dv === dvEsperado;
+}
+function validateStep(){
+  if(state.step===0){
+    if(!state.nombre.trim()) return "Ingresa tu nombre completo.";
+    if(!state.rut.trim()) return "Ingresa tu RUT.";
+    if(!validaRut(state.rut)) return "El RUT ingresado no parece válido. Revisa que esté bien escrito (con su dígito verificador).";
+    if(!state.telefono.trim()) return "Ingresa un teléfono de contacto.";
+  }
+  if(state.step===1){
+    const req = ['alergias','diabetes','hipertension','vih','hepatitis','enf_inmunes','cond_piel','herpes'];
+    for(const f of req){ if(state[f]===null) return "Responde todas las preguntas del historial médico."; }
+    if(state.alergias===true && !state.alergias_detalle.trim()) return "Cuéntanos a qué eres alérgico/a.";
+    if(state.cond_piel===true && !state.cond_piel_detalle.trim()) return "Cuéntanos qué condición de piel tienes.";
+    if(state.herpes===true && !state.herpes_detalle.trim()) return "Cuéntanos más sobre el herpes o las ampollas de fiebre.";
+  }
+  if(state.step===2){
+    if(state.diseno_aprobado===null) return "Confirma si estás de acuerdo con el color, diseño y grosor aplicados.";
+    if(state.diseno_aprobado===false) return "Conversa con tu especialista antes de continuar: el diseño debe estar aprobado para poder firmar.";
+  }
+  if(state.step===3){
+    if(!state.acepta_cuidados) return "Marca que leíste los cuidados posteriores para continuar.";
+  }
+  if(state.step===4){
+    if(!state.acepta_terminos) return "Debes aceptar los términos del consentimiento.";
+    if(!state.firmaDataUrl) return "Dibuja tu firma antes de continuar.";
+    if(!state.declara_firma) return "Marca la declaración de firma electrónica.";
+  }
+  return null;
+}
+
+async function submitForm(){
+  saving = true; saveError = null;
+  renderApp();
+  try{
+    if(!FIREBASE_READY) throw new Error('Firebase no está listo');
+    const record = Object.assign({}, state, {
+      nombre_buscar: (state.nombre||'').trim().toLowerCase(),
+      submittedAtClient: new Date().toISOString(),
+      submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await db.collection(COLLECTION).add(record);
+    submitted = true;
+  }catch(err){
+    saveError = "No se pudo guardar tu firma. Revisa tu conexión e inténtalo nuevamente.";
+    console.error(err);
+  }
+  saving = false;
+  renderApp();
+}
+function nextStep(){
+  const err = validateStep();
+  if(err){ showErr(err); return; }
+  if(state.step === 4){ submitForm(); return; }
+  state.step++;
+  renderApp();
+}
+function prevStep(){ state.step--; renderApp(); }
+
+function buildPrintSummary(){
+  const rows = [
+    ['Nombre completo', state.nombre], ['RUT', state.rut], ['Edad', state.edad],
+    ['Teléfono', state.telefono], ['Correo', state.email], ['Fecha', state.fecha], ['Ciudad', state.ciudad]
+  ];
+  const hist = [
+    ['Alergias', ynLabel(state.alergias) + (state.alergias_detalle?` — ${state.alergias_detalle}`:'')],
+    ['Diabetes', ynLabel(state.diabetes)], ['Hipertensión', ynLabel(state.hipertension)],
+    ['VIH', ynLabel(state.vih)], ['Hepatitis', ynLabel(state.hepatitis)],
+    ['Enf. inmunes', ynLabel(state.enf_inmunes)],
+    ['Condiciones de piel', ynLabel(state.cond_piel) + (state.cond_piel_detalle?` — ${state.cond_piel_detalle}`:'')],
+    ['Herpes', ynLabel(state.herpes) + (state.herpes_detalle?` — ${state.herpes_detalle}`:'')],
+    ['Proc. químicos recientes', state.proc_quimicos||'—'], ['Proc. estéticos recientes', state.proc_esteticos||'—']
+  ];
+  const tec = [
+    ['N.° tratamientos anteriores', state.n_tratamientos||'—'], ['Tiempo desde el anterior', state.tiempo_anterior||'—'],
+    ['Microblading', ynLabel(state.microblading)], ['Tatuaje', ynLabel(state.tatuaje)],
+    ['Técnica realizada', state.tecnica||'—'], ['Diseño aprobado por la clienta', ynLabel(state.diseno_aprobado)]
+  ];
+  const kv = (arr)=> arr.map(([k,v])=>`<div class="pkv"><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join('');
+  document.getElementById('printSummary').innerHTML = `
+    <div class="pmark">Sibana</div>
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:#888;">Ficha personal y consentimiento informado — ${esc(state.fecha)}</div>
+    <h4>Datos personales</h4>${kv(rows)}
+    <h4>Historial médico</h4>${kv(hist)}
+    <h4>Técnica realizada</h4>${kv(tec)}
+    <h4>Consentimiento</h4>
+    <div class="pkv"><b>Acepta términos</b><span>${ynLabel(state.acepta_terminos)}</span></div>
+    <div class="pkv"><b>Firma electrónica declarada</b><span>${ynLabel(state.declara_firma)}</span></div>
+    <h4>Firma</h4>
+    ${state.firmaDataUrl?`<img class="psig" src="${state.firmaDataUrl}">`:''}
+  `;
+}
+
+function renderApp(){
+  if(adminMode){ renderAdmin(); return; }
+  if(submitted){
+    buildPrintSummary();
+    app.innerHTML = `<div class="brand"><div class="mark">Sibana</div></div><div class="wrap">${renderDone()}</div>`;
+    document.getElementById('btnDownload').addEventListener('click', ()=> window.print());
+    return;
+  }
+  const steps = [renderStep0, renderStep1, renderStep2, renderStep3, renderStep4];
+  app.innerHTML = `
+    <div class="brand"><div class="mark">Sibana</div><div class="sub">FICHA Y CONSENTIMIENTO INFORMADO</div></div>
+    <div class="wrap">
+      ${progressHtml()}
+      ${steps[state.step]()}
+      <div class="nav-row">
+        ${state.step>0 ? `<button class="btn ghost" id="btnBack">Atrás</button>` : `<span></span>`}
+        <button class="btn primary" id="btnNext" ${saving?'disabled':''}>${state.step===4 ? (saving?'Guardando…':'Firmar y enviar') : 'Continuar'}</button>
+      </div>
+    </div>
+    <button class="admin-toggle sans" id="adminBtn">Panel Sibana</button>
+  `;
+  bindInputs();
+  if(state.step===4) setupSignaturePad();
+  const backBtn = document.getElementById('btnBack');
+  if(backBtn) backBtn.addEventListener('click', prevStep);
+  document.getElementById('btnNext').addEventListener('click', nextStep);
+  document.getElementById('adminBtn').addEventListener('click', openAdminGate);
+}
+
+// ---------- Admin panel ----------
+let adminMode = false;
+let allEntries = [];
+let adminLoading = false;
+let adminLoadError = null;
+let searchTerm = "";
+
+function openAdminGate(){
+  // Si este dispositivo ya inició sesión con la cuenta del equipo (por
+  // ejemplo porque ya se usó antes en este mismo navegador), entra directo,
+  // sin volver a pedir la contraseña — igual que en la Agenda.
+  if(teamAuthed){ adminMode = true; loadAdminEntries(); return; }
+  const back = document.createElement('div');
+  back.className = 'modal-back';
+  back.innerHTML = `
+    <div class="modal sans">
+      <h3>Panel Sibana</h3>
+      <div class="field"><label>Contraseña del equipo</label><input type="password" id="pcInput" autocomplete="current-password"></div>
+      <div class="err sans" id="pcErr"></div>
+      <div class="nav-row">
+        <button class="btn ghost" id="pcCancel">Cancelar</button>
+        <button class="btn primary" id="pcOk">Entrar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(back);
+  document.getElementById('pcCancel').addEventListener('click', ()=> back.remove());
+  document.getElementById('pcOk').addEventListener('click', ()=>{
+    const val = document.getElementById('pcInput').value;
+    const okBtn = document.getElementById('pcOk');
+    const errBox = document.getElementById('pcErr');
+    if(!val){ errBox.classList.add('show'); errBox.textContent = 'Escribe la contraseña.'; return; }
+    okBtn.disabled = true;
+    firebase.auth().signInWithEmailAndPassword(TEAM_EMAIL, val).then(()=>{
+      back.remove();
+      adminMode = true;
+      loadAdminEntries();
+    }).catch(err=>{
+      console.error('No se pudo iniciar sesión', err);
+      errBox.classList.add('show'); errBox.textContent = 'Contraseña incorrecta.';
+      okBtn.disabled = false;
+    });
+  });
+}
+
+async function loadAdminEntries(){
+  adminLoading = true; adminLoadError = null;
+  renderApp();
+  try{
+    if(!FIREBASE_READY) throw new Error('Firebase no está listo');
+    const snap = await db.collection(COLLECTION).orderBy('submittedAtClient','desc').limit(300).get();
+    allEntries = snap.docs.map(d=> Object.assign({_id:d.id}, d.data()));
+  }catch(err){
+    allEntries = [];
+    adminLoadError = "No se pudieron cargar las fichas. Revisa la conexión o las reglas de Firestore.";
+    console.error(err);
+  }
+  adminLoading = false;
+  renderApp();
+}
+
+function fmtDate(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('es-CL', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' · ' + d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+}
+
+let deleteError = null;
+function showConfirm(msg, onConfirm){
+  const back = document.createElement('div');
+  back.className = 'modal-back';
+  back.innerHTML = `
+    <div class="modal sans">
+      <h3>Confirmar</h3>
+      <p style="color:var(--cream);font-size:13.5px;line-height:1.5;margin:0 0 4px;">${esc(msg)}</p>
+      <div class="nav-row">
+        <button class="btn ghost" id="cfCancel">Cancelar</button>
+        <button class="btn primary" id="cfOk">Sí, eliminar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(back);
+  document.getElementById('cfCancel').addEventListener('click', ()=> back.remove());
+  document.getElementById('cfOk').addEventListener('click', ()=>{ back.remove(); onConfirm(); });
+}
+async function deleteEntry(id){
+  deleteError = null;
+  try{
+    await db.collection(COLLECTION).doc(id).delete();
+    allEntries = allEntries.filter(e=>e._id!==id);
+  }catch(err){
+    console.error(err);
+    deleteError = 'No se pudo eliminar la ficha. Revisa tu conexión e inténtalo de nuevo.';
+  }
+  renderApp();
+}
+function filteredEntries(){
+  if(!searchTerm.trim()) return allEntries;
+  const t = searchTerm.trim().toLowerCase();
+  return allEntries.filter(e=>
+    (e.nombre||'').toLowerCase().includes(t) ||
+    (e.rut||'').toLowerCase().includes(t) ||
+    (e.telefono||'').toLowerCase().includes(t)
+  );
+}
+
+function renderAdmin(){
+  let body;
+  if(adminLoading){
+    body = `<div class="empty-admin">Cargando fichas…</div>`;
+  } else if(adminLoadError){
+    body = `<div class="empty-admin">${esc(adminLoadError)}</div>`;
+  } else {
+    const list = filteredEntries();
+    if(list.length===0){
+      body = `<div class="empty-admin">No se encontraron fichas.</div>`;
+    } else {
+      body = list.map((e,i)=>`
+        <div class="entry" data-idx="${i}">
+          <div class="entry-top">
+            <span class="entry-name">${esc(e.nombre)||'Sin nombre'}</span>
+            <span class="entry-meta">${fmtDate(e.submittedAtClient)}</span>
+          </div>
+          <div class="entry-body">
+            <div class="kv"><b>RUT</b><span>${esc(e.rut)}</span></div>
+            <div class="kv"><b>Edad</b><span>${esc(e.edad)}</span></div>
+            <div class="kv"><b>Teléfono</b><span>${esc(e.telefono)}</span></div>
+            <div class="kv"><b>Correo</b><span>${esc(e.email)}</span></div>
+            <div class="kv"><b>Ciudad</b><span>${esc(e.ciudad)}</span></div>
+            <div class="kv"><b>Alergias</b><span>${ynLabel(e.alergias)} ${e.alergias_detalle?'— '+esc(e.alergias_detalle):''}</span></div>
+            <div class="kv"><b>Diabetes</b><span>${ynLabel(e.diabetes)}</span></div>
+            <div class="kv"><b>Hipertensión</b><span>${ynLabel(e.hipertension)}</span></div>
+            <div class="kv"><b>VIH</b><span>${ynLabel(e.vih)}</span></div>
+            <div class="kv"><b>Hepatitis</b><span>${ynLabel(e.hepatitis)}</span></div>
+            <div class="kv"><b>Enf. inmunes</b><span>${ynLabel(e.enf_inmunes)}</span></div>
+            <div class="kv"><b>Cond. piel</b><span>${ynLabel(e.cond_piel)} ${e.cond_piel_detalle?'— '+esc(e.cond_piel_detalle):''}</span></div>
+            <div class="kv"><b>Herpes</b><span>${ynLabel(e.herpes)} ${e.herpes_detalle?'— '+esc(e.herpes_detalle):''}</span></div>
+            <div class="kv"><b>Proc. químicos</b><span>${esc(e.proc_quimicos)}</span></div>
+            <div class="kv"><b>Proc. estéticos</b><span>${esc(e.proc_esteticos)}</span></div>
+            <div class="kv"><b>Tratam. anteriores</b><span>${esc(e.n_tratamientos)}</span></div>
+            <div class="kv"><b>Microblading</b><span>${ynLabel(e.microblading)}</span></div>
+            <div class="kv"><b>Tatuaje</b><span>${ynLabel(e.tatuaje)}</span></div>
+            <div class="kv"><b>Tiempo trat. anterior</b><span>${esc(e.tiempo_anterior)}</span></div>
+            <div class="kv"><b>Técnica</b><span>${esc(e.tecnica)}</span></div>
+            <div class="kv"><b>Diseño aprobado</b><span>${ynLabel(e.diseno_aprobado)}</span></div>
+            ${e.firmaDataUrl?`<div class="sig-preview"><img src="${e.firmaDataUrl}"></div>`:''}
+            <button type="button" class="btn ghost sans" style="margin-top:14px;color:var(--rose);border-color:var(--rose);" data-act="delete-entry" data-id="${esc(e._id)}">Eliminar esta ficha</button>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+  app.innerHTML = `
+    <div class="admin-view">
+      <div class="admin-head">
+        <div class="brand" style="text-align:left;margin:0;"><div class="mark" style="font-size:24px;">Sibana</div></div>
+        <button class="btn ghost sans" id="adminClose">Cerrar panel</button>
+      </div>
+      <div class="search-row">
+        <input type="search" id="searchInput" placeholder="Buscar por nombre, RUT o teléfono" value="${esc(searchTerm)}">
+      </div>
+      <p class="step-desc sans">${filteredEntries().length} de ${allEntries.length} ficha${allEntries.length===1?'':'s'}.</p>
+      ${deleteError ? `<div class="err sans show">${esc(deleteError)}</div>` : ''}
+      ${body}
+    </div>
+  `;
+  document.getElementById('adminClose').addEventListener('click', ()=>{ adminMode=false; deleteError=null; renderApp(); });
+  const si = document.getElementById('searchInput');
+  si.addEventListener('input', (e)=>{ searchTerm = e.target.value; renderApp(); si.focus(); si.selectionStart = si.selectionEnd = si.value.length; });
+  document.querySelectorAll('.entry').forEach(el=>{
+    el.addEventListener('click', ()=> el.classList.toggle('open'));
+  });
+  document.querySelectorAll('[data-act="delete-entry"]').forEach(btn=>{
+    btn.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      const id = btn.dataset.id;
+      const entry = allEntries.find(x=>x._id===id);
+      showConfirm(`¿Eliminar la ficha de ${entry?entry.nombre||'esta clienta':'esta clienta'}? Esta acción no se puede deshacer.`, ()=> deleteEntry(id));
+    });
+  });
+}
+
+renderApp();
+</script>
