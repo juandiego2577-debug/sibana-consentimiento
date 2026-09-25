@@ -201,6 +201,7 @@ const state = {
   n_tratamientos:"", microblading:null, tatuaje:null, tiempo_anterior:"",
   tecnica:"", diseno_aprobado:null,
   acepta_cuidados:false,
+  acepta_datos:false,
   acepta_terminos:false, declara_firma:false,
   firmaDataUrl:null
 };
@@ -293,8 +294,8 @@ function renderStep2(){
         <div class="field"><label>N° de tratamientos anteriores</label><input type="number" data-bind="n_tratamientos" value="${esc(state.n_tratamientos)}"></div>
         <div class="field"><label>Tiempo desde el tratamiento anterior</label><input type="text" data-bind="tiempo_anterior" value="${esc(state.tiempo_anterior)}" placeholder="Ej: 8 meses"></div>
       </div>
-      ${yn('microblading','¿Microblading?')}
-      ${yn('tatuaje','¿Tatuaje?')}
+      ${yn('microblading','¿Te has hecho microblading antes (en cualquier lugar, no solo acá)?')}
+      ${yn('tatuaje','¿Te has hecho un tatuaje de cejas/labios antes (en cualquier lugar, no solo acá)?')}
     </div>
     <div class="card">
       <div class="field"><label>Técnica a realizar</label><input type="text" data-bind="tecnica" value="${esc(state.tecnica)}"></div>
@@ -342,10 +343,28 @@ function renderStep4(){
     <h1 class="step-title">Consentimiento y firma</h1>
     <p class="step-desc sans">Última parte. Tu firma queda registrada junto con la fecha y hora de hoy.</p>
     <div class="card">
-      <p class="consent-text">Declaro que la información entregada en este formulario es verdadera y completa. Manifiesto mi conformidad con la información recibida sobre el procedimiento a realizarme y declaro haber visto y aprobado el diseño propuesto. Estoy en conocimiento de que el color cicatrizará con aproximadamente un 40% a 50% menos intensidad de lo aplicado, y de que el retoque debe realizarse entre 30 y 40 días después de la sesión. Me comprometo a seguir las indicaciones de cuidado posterior.</p>
+      <h2>Riesgos posibles</h2>
+      <p class="step-desc sans" style="margin-top:0;">Como en cualquier procedimiento de este tipo, existe un riesgo (poco frecuente) de:</p>
+      <ul class="care-list">
+        <li>Reacción alérgica al pigmento o a productos usados en la zona.</li>
+        <li>Infección, sobre todo si no se siguen las indicaciones de cuidado posterior.</li>
+        <li>Un resultado distinto al esperado en color, forma o simetría — el retoque existe justamente para corregir esto.</li>
+        <li>Cicatrización atípica (queloides, manchas) en casos excepcionales, más probable si ya tienes esa tendencia.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <p class="consent-text">Declaro que la información entregada en este formulario es verdadera y completa. Manifiesto mi conformidad con la información recibida sobre el procedimiento a realizarme, incluidos los riesgos descritos arriba, y declaro haber visto y aprobado el diseño propuesto. Estoy en conocimiento de que el color cicatrizará con aproximadamente un 40% a 50% menos intensidad de lo aplicado, y de que el retoque debe realizarse entre 30 y 40 días después de la sesión. Me comprometo a seguir las indicaciones de cuidado posterior.</p>
       <label class="checkline">
         <input type="checkbox" id="acepta_terminos" ${state.acepta_terminos?'checked':''}>
         <span>Acepto los términos anteriores y autorizo la realización del procedimiento.</span>
+      </label>
+    </div>
+    <div class="card">
+      <h2>Datos personales</h2>
+      <p class="consent-text">En este formulario entregaste datos personales, incluidos datos sensibles de salud (alergias, condiciones médicas). Sibana los usa únicamente para evaluar tu aptitud para el procedimiento y darte una atención segura — no se comparten con terceros ni se usan para otro fin. Podés pedir en cualquier momento que se te muestren, corrijan o eliminen, escribiéndonos directamente.</p>
+      <label class="checkline">
+        <input type="checkbox" id="acepta_datos" ${state.acepta_datos?'checked':''}>
+        <span>Autorizo a Sibana a tratar mis datos personales, incluidos los de salud, para estos fines.</span>
       </label>
     </div>
     <div class="card">
@@ -442,6 +461,8 @@ function bindInputs(){
   });
   const ac = document.getElementById('acepta_cuidados');
   if(ac) ac.addEventListener('change', e=> state.acepta_cuidados = e.target.checked);
+  const ad = document.getElementById('acepta_datos');
+  if(ad) ad.addEventListener('change', e=> state.acepta_datos = e.target.checked);
   const at = document.getElementById('acepta_terminos');
   if(at) at.addEventListener('change', e=> state.acepta_terminos = e.target.checked);
   const df = document.getElementById('declara_firma');
@@ -489,6 +510,7 @@ function validateStep(){
   }
   if(state.step===4){
     if(!state.acepta_terminos) return "Debes aceptar los términos del consentimiento.";
+    if(!state.acepta_datos) return "Debes autorizar el tratamiento de tus datos personales para continuar.";
     if(!state.firmaDataUrl) return "Dibuja tu firma antes de continuar.";
     if(!state.declara_firma) return "Marca la declaración de firma electrónica.";
   }
@@ -550,6 +572,8 @@ function buildPrintSummary(){
     <h4>Historial médico</h4>${kv(hist)}
     <h4>Técnica realizada</h4>${kv(tec)}
     <h4>Consentimiento</h4>
+    <div class="pkv"><b>Leyó cuidados posteriores</b><span>${ynLabel(state.acepta_cuidados)}</span></div>
+    <div class="pkv"><b>Autorizó tratamiento de sus datos</b><span>${ynLabel(state.acepta_datos)}</span></div>
     <div class="pkv"><b>Acepta términos</b><span>${ynLabel(state.acepta_terminos)}</span></div>
     <div class="pkv"><b>Firma electrónica declarada</b><span>${ynLabel(state.declara_firma)}</span></div>
     <h4>Firma</h4>
@@ -729,6 +753,10 @@ function renderAdmin(){
             <div class="kv"><b>Tiempo trat. anterior</b><span>${esc(e.tiempo_anterior)}</span></div>
             <div class="kv"><b>Técnica</b><span>${esc(e.tecnica)}</span></div>
             <div class="kv"><b>Diseño aprobado</b><span>${ynLabel(e.diseno_aprobado)}</span></div>
+            <div class="kv"><b>Leyó cuidados posteriores</b><span>${ynLabel(e.acepta_cuidados)}</span></div>
+            <div class="kv"><b>Autorizó tratamiento de sus datos</b><span>${ynLabel(e.acepta_datos)}</span></div>
+            <div class="kv"><b>Aceptó términos del consentimiento</b><span>${ynLabel(e.acepta_terminos)}</span></div>
+            <div class="kv"><b>Declaró firma electrónica</b><span>${ynLabel(e.declara_firma)}</span></div>
             ${e.firmaDataUrl?`<div class="sig-preview"><img src="${e.firmaDataUrl}"></div>`:''}
             <button type="button" class="btn ghost sans" style="margin-top:14px;color:var(--rose);border-color:var(--rose);" data-act="delete-entry" data-id="${esc(e._id)}">Eliminar esta ficha</button>
           </div>
