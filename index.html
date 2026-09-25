@@ -548,42 +548,47 @@ function nextStep(){
 }
 function prevStep(){ state.step--; renderApp(); }
 
-function buildPrintSummary(){
+// d: los datos a imprimir — por defecto el "state" en vivo (la clienta recién
+// firmando), o una ficha ya guardada del Panel Sibana (para que el negocio
+// también pueda descargar/imprimir cualquier ficha después, no solo la
+// clienta en el momento de firmar).
+function buildPrintSummary(d){
+  d = d || state;
   const rows = [
-    ['Nombre completo', state.nombre], ['RUT', state.rut], ['Edad', state.edad],
-    ['Teléfono', state.telefono], ['Correo', state.email], ['Fecha', state.fecha], ['Ciudad', state.ciudad]
+    ['Nombre completo', d.nombre], ['RUT', d.rut], ['Edad', d.edad],
+    ['Teléfono', d.telefono], ['Correo', d.email], ['Fecha', d.fecha], ['Ciudad', d.ciudad]
   ];
   const hist = [
-    ['Alergias', ynLabel(state.alergias) + (state.alergias_detalle?` — ${state.alergias_detalle}`:'')],
-    ['Diabetes', ynLabel(state.diabetes)], ['Hipertensión', ynLabel(state.hipertension)],
-    ['VIH', ynLabel(state.vih)], ['Hepatitis', ynLabel(state.hepatitis)],
-    ['Enf. inmunes', ynLabel(state.enf_inmunes)],
-    ['Condiciones de piel', ynLabel(state.cond_piel) + (state.cond_piel_detalle?` — ${state.cond_piel_detalle}`:'')],
-    ['Herpes', ynLabel(state.herpes) + (state.herpes_detalle?` — ${state.herpes_detalle}`:'')],
-    ['Proc. químicos recientes', state.proc_quimicos||'—'], ['Proc. estéticos recientes', state.proc_esteticos||'—']
+    ['Alergias', ynLabel(d.alergias) + (d.alergias_detalle?` — ${d.alergias_detalle}`:'')],
+    ['Diabetes', ynLabel(d.diabetes)], ['Hipertensión', ynLabel(d.hipertension)],
+    ['VIH', ynLabel(d.vih)], ['Hepatitis', ynLabel(d.hepatitis)],
+    ['Enf. inmunes', ynLabel(d.enf_inmunes)],
+    ['Condiciones de piel', ynLabel(d.cond_piel) + (d.cond_piel_detalle?` — ${d.cond_piel_detalle}`:'')],
+    ['Herpes', ynLabel(d.herpes) + (d.herpes_detalle?` — ${d.herpes_detalle}`:'')],
+    ['Proc. químicos recientes', d.proc_quimicos||'—'], ['Proc. estéticos recientes', d.proc_esteticos||'—']
   ];
   const previos = [
-    ['N.° tratamientos anteriores', state.n_tratamientos||'—'], ['Tiempo desde el anterior', state.tiempo_anterior||'—'],
-    ['¿Microblading antes?', ynLabel(state.microblading)], ['¿Tatuaje antes?', ynLabel(state.tatuaje)],
+    ['N.° tratamientos anteriores', d.n_tratamientos||'—'], ['Tiempo desde el anterior', d.tiempo_anterior||'—'],
+    ['¿Microblading antes?', ynLabel(d.microblading)], ['¿Tatuaje antes?', ynLabel(d.tatuaje)],
   ];
   const hoy = [
-    ['Técnica realizada', state.tecnica||'—'], ['Diseño aprobado por la clienta', ynLabel(state.diseno_aprobado)]
+    ['Técnica realizada', d.tecnica||'—'], ['Diseño aprobado por la clienta', ynLabel(d.diseno_aprobado)]
   ];
   const kv = (arr)=> arr.map(([k,v])=>`<div class="pkv"><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join('');
   document.getElementById('printSummary').innerHTML = `
     <div class="pmark">Sibana</div>
-    <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:#888;">Ficha personal y consentimiento informado — ${esc(state.fecha)}</div>
+    <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:#888;">Ficha personal y consentimiento informado — ${esc(d.fecha)}</div>
     <h4>Datos personales</h4>${kv(rows)}
     <h4>Historial médico</h4>${kv(hist)}
     <h4>Tratamientos anteriores (previos a hoy)</h4>${kv(previos)}
     <h4>Sesión de hoy</h4>${kv(hoy)}
     <h4>Consentimiento</h4>
-    <div class="pkv"><b>Leyó cuidados posteriores</b><span>${ynLabel(state.acepta_cuidados)}</span></div>
-    <div class="pkv"><b>Autorizó tratamiento de sus datos</b><span>${ynLabel(state.acepta_datos)}</span></div>
-    <div class="pkv"><b>Acepta términos</b><span>${ynLabel(state.acepta_terminos)}</span></div>
-    <div class="pkv"><b>Firma electrónica declarada</b><span>${ynLabel(state.declara_firma)}</span></div>
+    <div class="pkv"><b>Leyó cuidados posteriores</b><span>${ynLabel(d.acepta_cuidados)}</span></div>
+    <div class="pkv"><b>Autorizó tratamiento de sus datos</b><span>${ynLabel(d.acepta_datos)}</span></div>
+    <div class="pkv"><b>Acepta términos</b><span>${ynLabel(d.acepta_terminos)}</span></div>
+    <div class="pkv"><b>Firma electrónica declarada</b><span>${ynLabel(d.declara_firma)}</span></div>
     <h4>Firma</h4>
-    ${state.firmaDataUrl?`<img class="psig" src="${state.firmaDataUrl}">`:''}
+    ${d.firmaDataUrl?`<img class="psig" src="${d.firmaDataUrl}">`:''}
   `;
 }
 
@@ -769,7 +774,8 @@ function renderAdmin(){
             <div class="kv"><b>Aceptó términos del consentimiento</b><span>${ynLabel(e.acepta_terminos)}</span></div>
             <div class="kv"><b>Declaró firma electrónica</b><span>${ynLabel(e.declara_firma)}</span></div>
             ${e.firmaDataUrl?`<div class="sig-preview"><img src="${e.firmaDataUrl}"></div>`:''}
-            <button type="button" class="btn ghost sans" style="margin-top:14px;color:var(--rose);border-color:var(--rose);" data-act="delete-entry" data-id="${esc(e._id)}">Eliminar esta ficha</button>
+            <button type="button" class="btn ghost sans" style="margin-top:14px;" data-act="download-entry" data-id="${esc(e._id)}">Descargar esta ficha (PDF)</button>
+            <button type="button" class="btn ghost sans" style="margin-top:14px;margin-left:6px;color:var(--rose);border-color:var(--rose);" data-act="delete-entry" data-id="${esc(e._id)}">Eliminar esta ficha</button>
           </div>
         </div>
       `).join('');
@@ -794,6 +800,16 @@ function renderAdmin(){
   si.addEventListener('input', (e)=>{ searchTerm = e.target.value; renderApp(); si.focus(); si.selectionStart = si.selectionEnd = si.value.length; });
   document.querySelectorAll('.entry').forEach(el=>{
     el.addEventListener('click', ()=> el.classList.toggle('open'));
+  });
+  document.querySelectorAll('[data-act="download-entry"]').forEach(btn=>{
+    btn.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      const id = btn.dataset.id;
+      const entry = allEntries.find(x=>x._id===id);
+      if(!entry) return;
+      buildPrintSummary(entry);
+      window.print();
+    });
   });
   document.querySelectorAll('[data-act="delete-entry"]').forEach(btn=>{
     btn.addEventListener('click', (ev)=>{
