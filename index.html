@@ -119,6 +119,8 @@
   .entry.open .entry-body{display:block;}
   .kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;margin-bottom:3px;}
   .kv b{color:var(--muted);font-weight:400;}
+  .entry-subtitle{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:4px;margin:16px 0 8px;}
+  .entry-subtitle:first-child{margin-top:0;}
   .sig-preview{background:#fdfaf3;border-radius:var(--radius);margin-top:10px;padding:6px;}
   .sig-preview img{display:block;max-width:220px;}
   .empty-admin{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--muted);font-size:13px;text-align:center;padding:40px 0;}
@@ -327,8 +329,9 @@ function renderStep3(){
         <li>No rasques ni roces la zona, ni apliques maquillaje sobre ella.</li>
         <li>No consumas alcohol ni drogas durante la cicatrización: afecta el resultado.</li>
         <li>Ante cualquier reacción o complicación, acude a la brevedad a un médico.</li>
-        <li>El retoque se realiza entre 30 y 40 días después; pasado ese plazo deja de estar incluido. Si no puedes asistir, avísanos.</li>
+        <li>El retoque se realiza entre 30 y 45 días después; pasado ese plazo deja de estar incluido. Si no puedes asistir, avísanos.</li>
       </ul>
+      <div class="legal-box" style="margin-top:16px;">🛡️ <b>Garantía de servicio:</b> tienes hasta 90 días desde tu sesión para volver sin costo si algo necesita corrección.</div>
     </div>
     <label class="checkline">
       <input type="checkbox" id="acepta_cuidados" ${state.acepta_cuidados?'checked':''}>
@@ -343,17 +346,17 @@ function renderStep4(){
     <h1 class="step-title">Consentimiento y firma</h1>
     <p class="step-desc sans">Última parte. Tu firma queda registrada junto con la fecha y hora de hoy.</p>
     <div class="card">
-      <h2>Riesgos posibles</h2>
-      <p class="step-desc sans" style="margin-top:0;">Como en cualquier procedimiento de este tipo, existe un riesgo (poco frecuente) de:</p>
+      <h2>Sobre los resultados y tu seguridad</h2>
+      <p class="step-desc sans" style="margin-top:0;">La gran mayoría de nuestras clientas no tiene ningún inconveniente, sobre todo siguiendo las indicaciones de cuidado posterior. Aun así, por transparencia, te contamos qué podría pasar en casos poco frecuentes:</p>
       <ul class="care-list">
-        <li>Reacción alérgica al pigmento o a productos usados en la zona.</li>
-        <li>Infección, sobre todo si no se siguen las indicaciones de cuidado posterior.</li>
-        <li>Un resultado distinto al esperado en color, forma o simetría — el retoque existe justamente para corregir esto.</li>
-        <li>Cicatrización atípica (queloides, manchas) en casos excepcionales, más probable si ya tienes esa tendencia.</li>
+        <li>Una reacción alérgica al pigmento o a algún producto usado en la zona (poco común).</li>
+        <li>Una infección — por eso insistimos tanto en los cuidados posteriores, son la mejor forma de evitarla.</li>
+        <li>Un resultado que no sea exactamente el esperado en color, forma o simetría — para eso está incluido el retoque dentro del plazo indicado.</li>
+        <li>Una cicatrización distinta a la normal (queloides, manchas), algo excepcional y más probable solo si ya tenías esa tendencia antes.</li>
       </ul>
     </div>
     <div class="card">
-      <p class="consent-text">Declaro que la información entregada en este formulario es verdadera y completa. Manifiesto mi conformidad con la información recibida sobre el procedimiento a realizarme, incluidos los riesgos descritos arriba, y declaro haber visto y aprobado el diseño propuesto. Estoy en conocimiento de que el color cicatrizará con aproximadamente un 40% a 50% menos intensidad de lo aplicado, y de que el retoque debe realizarse entre 30 y 40 días después de la sesión. Me comprometo a seguir las indicaciones de cuidado posterior.</p>
+      <p class="consent-text">Declaro que la información entregada en este formulario es verdadera y completa. Manifiesto mi conformidad con la información recibida sobre el procedimiento a realizarme, incluidos los riesgos descritos arriba, y declaro haber visto y aprobado el diseño propuesto. Estoy en conocimiento de que el color cicatrizará con aproximadamente un 40% a 50% menos intensidad de lo aplicado, y de que el retoque debe realizarse entre 30 y 45 días después de la sesión. Me comprometo a seguir las indicaciones de cuidado posterior.</p>
       <label class="checkline">
         <input type="checkbox" id="acepta_terminos" ${state.acepta_terminos?'checked':''}>
         <span>Acepto los términos anteriores y autorizo la realización del procedimiento.</span>
@@ -361,7 +364,7 @@ function renderStep4(){
     </div>
     <div class="card">
       <h2>Datos personales</h2>
-      <p class="consent-text">En este formulario entregaste datos personales, incluidos datos sensibles de salud (alergias, condiciones médicas). Sibana los usa únicamente para evaluar tu aptitud para el procedimiento y darte una atención segura — no se comparten con terceros ni se usan para otro fin. Podés pedir en cualquier momento que se te muestren, corrijan o eliminen, escribiéndonos directamente.</p>
+      <p class="consent-text">En este formulario entregaste datos personales, incluidos datos sensibles de salud (alergias, condiciones médicas). Sibana los usa únicamente para evaluar tu aptitud para el procedimiento y darte una atención segura — no se comparten con terceros ni se usan para otro fin. Puedes pedir en cualquier momento que se te muestren, corrijan o eliminen, escribiéndonos directamente.</p>
       <label class="checkline">
         <input type="checkbox" id="acepta_datos" ${state.acepta_datos?'checked':''}>
         <span>Autorizo a Sibana a tratar mis datos personales, incluidos los de salud, para estos fines.</span>
@@ -559,9 +562,11 @@ function buildPrintSummary(){
     ['Herpes', ynLabel(state.herpes) + (state.herpes_detalle?` — ${state.herpes_detalle}`:'')],
     ['Proc. químicos recientes', state.proc_quimicos||'—'], ['Proc. estéticos recientes', state.proc_esteticos||'—']
   ];
-  const tec = [
+  const previos = [
     ['N.° tratamientos anteriores', state.n_tratamientos||'—'], ['Tiempo desde el anterior', state.tiempo_anterior||'—'],
-    ['Microblading', ynLabel(state.microblading)], ['Tatuaje', ynLabel(state.tatuaje)],
+    ['¿Microblading antes?', ynLabel(state.microblading)], ['¿Tatuaje antes?', ynLabel(state.tatuaje)],
+  ];
+  const hoy = [
     ['Técnica realizada', state.tecnica||'—'], ['Diseño aprobado por la clienta', ynLabel(state.diseno_aprobado)]
   ];
   const kv = (arr)=> arr.map(([k,v])=>`<div class="pkv"><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join('');
@@ -570,7 +575,8 @@ function buildPrintSummary(){
     <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:11px;color:#888;">Ficha personal y consentimiento informado — ${esc(state.fecha)}</div>
     <h4>Datos personales</h4>${kv(rows)}
     <h4>Historial médico</h4>${kv(hist)}
-    <h4>Técnica realizada</h4>${kv(tec)}
+    <h4>Tratamientos anteriores (previos a hoy)</h4>${kv(previos)}
+    <h4>Sesión de hoy</h4>${kv(hoy)}
     <h4>Consentimiento</h4>
     <div class="pkv"><b>Leyó cuidados posteriores</b><span>${ynLabel(state.acepta_cuidados)}</span></div>
     <div class="pkv"><b>Autorizó tratamiento de sus datos</b><span>${ynLabel(state.acepta_datos)}</span></div>
@@ -732,11 +738,13 @@ function renderAdmin(){
             <span class="entry-meta">${fmtDate(e.submittedAtClient)}</span>
           </div>
           <div class="entry-body">
+            <div class="entry-subtitle">Datos personales</div>
             <div class="kv"><b>RUT</b><span>${esc(e.rut)}</span></div>
             <div class="kv"><b>Edad</b><span>${esc(e.edad)}</span></div>
             <div class="kv"><b>Teléfono</b><span>${esc(e.telefono)}</span></div>
             <div class="kv"><b>Correo</b><span>${esc(e.email)}</span></div>
             <div class="kv"><b>Ciudad</b><span>${esc(e.ciudad)}</span></div>
+            <div class="entry-subtitle">Historial médico</div>
             <div class="kv"><b>Alergias</b><span>${ynLabel(e.alergias)} ${e.alergias_detalle?'— '+esc(e.alergias_detalle):''}</span></div>
             <div class="kv"><b>Diabetes</b><span>${ynLabel(e.diabetes)}</span></div>
             <div class="kv"><b>Hipertensión</b><span>${ynLabel(e.hipertension)}</span></div>
@@ -747,12 +755,15 @@ function renderAdmin(){
             <div class="kv"><b>Herpes</b><span>${ynLabel(e.herpes)} ${e.herpes_detalle?'— '+esc(e.herpes_detalle):''}</span></div>
             <div class="kv"><b>Proc. químicos</b><span>${esc(e.proc_quimicos)}</span></div>
             <div class="kv"><b>Proc. estéticos</b><span>${esc(e.proc_esteticos)}</span></div>
-            <div class="kv"><b>Tratam. anteriores</b><span>${esc(e.n_tratamientos)}</span></div>
-            <div class="kv"><b>Microblading</b><span>${ynLabel(e.microblading)}</span></div>
-            <div class="kv"><b>Tatuaje</b><span>${ynLabel(e.tatuaje)}</span></div>
-            <div class="kv"><b>Tiempo trat. anterior</b><span>${esc(e.tiempo_anterior)}</span></div>
+            <div class="entry-subtitle">Tratamientos anteriores (previos a hoy)</div>
+            <div class="kv"><b>N° de tratamientos</b><span>${esc(e.n_tratamientos)}</span></div>
+            <div class="kv"><b>Microblading antes</b><span>${ynLabel(e.microblading)}</span></div>
+            <div class="kv"><b>Tatuaje antes</b><span>${ynLabel(e.tatuaje)}</span></div>
+            <div class="kv"><b>Tiempo desde el anterior</b><span>${esc(e.tiempo_anterior)}</span></div>
+            <div class="entry-subtitle">Sesión de hoy</div>
             <div class="kv"><b>Técnica</b><span>${esc(e.tecnica)}</span></div>
             <div class="kv"><b>Diseño aprobado</b><span>${ynLabel(e.diseno_aprobado)}</span></div>
+            <div class="entry-subtitle">Consentimiento firmado</div>
             <div class="kv"><b>Leyó cuidados posteriores</b><span>${ynLabel(e.acepta_cuidados)}</span></div>
             <div class="kv"><b>Autorizó tratamiento de sus datos</b><span>${ynLabel(e.acepta_datos)}</span></div>
             <div class="kv"><b>Aceptó términos del consentimiento</b><span>${ynLabel(e.acepta_terminos)}</span></div>
