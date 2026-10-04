@@ -175,6 +175,9 @@ const TEAM_EMAIL = 'sibana.cl+equipo@gmail.com';
 // en la Agenda → Más → Equipo): se entra con el usuario corto ("salome") y su
 // contraseña. Por dentro es esta cuenta (igual que en la Agenda). Qué fichas
 // puede ver cada una lo deciden las reglas de Firebase.
+// Mientras se preparan los usuarios personales, el Panel muestra la entrada
+// de siempre (solo contraseña). Al lanzarlos, poner esto en true.
+const USUARIOS_PERSONALES_VISIBLES = false;
 function normalizarUsuario(u){
   return String(u||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 }
@@ -657,13 +660,16 @@ function openAdminGate(){
   // ejemplo porque ya se usó antes en este mismo navegador), entra directo,
   // sin volver a pedir la contraseña — igual que en la Agenda.
   if(teamAuthed){ adminMode = true; loadAdminEntries(); return; }
+  // Usuarios personales: el campo "Usuario" no se muestra hasta que se lancen
+  // (igual que en la agenda). Para probar antes: "?usuario" en la dirección.
+  const conUsuario = USUARIOS_PERSONALES_VISIBLES || /[?&]usuario(=|&|$)/.test(location.search);
   const back = document.createElement('div');
   back.className = 'modal-back';
   back.innerHTML = `
     <div class="modal sans">
       <h3>Panel Sibana</h3>
-      <div class="field"><label>Usuario (déjalo vacío si usas la contraseña del equipo)</label><input type="text" id="pcUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
-      <div class="field"><label>Contraseña</label><input type="password" id="pcInput" autocomplete="current-password"></div>
+      ${conUsuario ? `<div class="field"><label>Usuario (déjalo vacío si usas la contraseña del equipo)</label><input type="text" id="pcUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"></div>` : ''}
+      <div class="field"><label>${conUsuario ? 'Contraseña' : 'Contraseña del equipo'}</label><input type="password" id="pcInput" autocomplete="current-password"></div>
       <div class="err sans" id="pcErr"></div>
       <div class="nav-row">
         <button class="btn ghost" id="pcCancel">Cancelar</button>
@@ -674,7 +680,7 @@ function openAdminGate(){
   document.getElementById('pcCancel').addEventListener('click', ()=> back.remove());
   document.getElementById('pcOk').addEventListener('click', ()=>{
     const val = document.getElementById('pcInput').value;
-    const usuario = normalizarUsuario(document.getElementById('pcUser').value);
+    const usuario = (conUsuario ? normalizarUsuario(document.getElementById('pcUser').value) : '');
     const okBtn = document.getElementById('pcOk');
     const errBox = document.getElementById('pcErr');
     if(!val){ errBox.classList.add('show'); errBox.textContent = 'Escribe la contraseña.'; return; }
