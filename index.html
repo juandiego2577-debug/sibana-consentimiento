@@ -227,7 +227,7 @@ function yn(field, label, extra){
 function detailField(field, placeholder, show){
   return `<div class="field detail-field ${show?'show':''}" data-detailfor="${field}">
     <label>Especificar</label>
-    <textarea data-bind="${field}" placeholder="${placeholder}">${state[field]||""}</textarea>
+    <textarea data-bind="${field}" placeholder="${placeholder}">${esc(state[field])}</textarea>
   </div>`;
 }
 function progressHtml(){
@@ -235,6 +235,14 @@ function progressHtml(){
     let cls = i < state.step ? 'done' : (i===state.step?'current':'');
     return `<div class="seg ${cls}"></div>`;
   }).join('')}</div>`;
+}
+// Las fichas las puede crear cualquiera (sin contraseña), así que nada de lo
+// que traen se mete tal cual en la pantalla: los textos pasan por esc() y la
+// firma solo se muestra si es de verdad una imagen PNG. Antes la firma se
+// ponía directo en <img src="...">, y una "firma" armada a propósito podía
+// ejecutar un programa con la sesión de quien abriera el Panel Sibana.
+function firmaSegura(u){
+  return (typeof u==='string' && /^data:image\/png;base64,[A-Za-z0-9+\/=]+$/.test(u)) ? u : '';
 }
 function esc(s){
   return (s||"").toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -588,7 +596,7 @@ function buildPrintSummary(d){
     <div class="pkv"><b>Acepta términos</b><span>${ynLabel(d.acepta_terminos)}</span></div>
     <div class="pkv"><b>Firma electrónica declarada</b><span>${ynLabel(d.declara_firma)}</span></div>
     <h4>Firma</h4>
-    ${d.firmaDataUrl?`<img class="psig" src="${d.firmaDataUrl}">`:''}
+    ${firmaSegura(d.firmaDataUrl)?`<img class="psig" src="${firmaSegura(d.firmaDataUrl)}">`:''}
   `;
 }
 
@@ -773,7 +781,7 @@ function renderAdmin(){
             <div class="kv"><b>Autorizó tratamiento de sus datos</b><span>${ynLabel(e.acepta_datos)}</span></div>
             <div class="kv"><b>Aceptó términos del consentimiento</b><span>${ynLabel(e.acepta_terminos)}</span></div>
             <div class="kv"><b>Declaró firma electrónica</b><span>${ynLabel(e.declara_firma)}</span></div>
-            ${e.firmaDataUrl?`<div class="sig-preview"><img src="${e.firmaDataUrl}"></div>`:''}
+            ${firmaSegura(e.firmaDataUrl)?`<div class="sig-preview"><img src="${firmaSegura(e.firmaDataUrl)}"></div>`:''}
             <button type="button" class="btn ghost sans" style="margin-top:14px;" data-act="download-entry" data-id="${esc(e._id)}">Descargar esta ficha (PDF)</button>
             <button type="button" class="btn ghost sans" style="margin-top:14px;margin-left:6px;color:var(--rose);border-color:var(--rose);" data-act="delete-entry" data-id="${esc(e._id)}">Eliminar esta ficha</button>
           </div>
