@@ -171,6 +171,14 @@ const COLLECTION = "sibana-consentimientos";
 // era equipo@sibanasantiago.app, un dominio que no es de Sibana: quien lo
 // comprara podía pedir "olvidé mi contraseña" y quedarse con la cuenta.
 const TEAM_EMAIL = 'sibana.cl+equipo@gmail.com';
+// Usuarios personales (cada especialista con el suyo, creados por los dueños
+// en la Agenda → Más → Equipo): se entra con el usuario corto ("salome") y su
+// contraseña. Por dentro es esta cuenta (igual que en la Agenda). Qué fichas
+// puede ver cada una lo deciden las reglas de Firebase.
+function normalizarUsuario(u){
+  return String(u||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+}
+function emailDeUsuario(u){ return 'juandiego2577+usr.' + normalizarUsuario(u) + '@gmail.com'; }
 
 let db, FIREBASE_READY = false;
 try{
@@ -188,13 +196,11 @@ try{
 let teamAuthed = false;
 if(FIREBASE_READY){
   firebase.auth().onAuthStateChanged(user=>{
-    // Una sesión de una cuenta que ya no se usa (la del correo viejo) se
-    // cierra: vuelve a la sesión anónima y el Panel pide la contraseña.
-    if(user && !user.isAnonymous && (user.email||'').toLowerCase()!==TEAM_EMAIL){
-      teamAuthed = false;
-      firebase.auth().signOut().catch(err=> console.error(err));
-      return;
-    }
+    // Ojo: esta página y la Agenda están en la misma dirección, así que
+    // COMPARTEN la sesión en un mismo navegador. Por eso aquí nunca se cierra
+    // la sesión de nadie (antes se cerraba toda cuenta que no fuera la del
+    // equipo, y eso sacaba de la Agenda a los dueños al abrir esta ficha).
+    // Las cuentas viejas ya se borraron: Firebase cierra solo esas sesiones.
     teamAuthed = !!(user && !user.isAnonymous);
     if(!user) firebase.auth().signInAnonymously().catch(err=> console.error('No se pudo abrir sesión anónima', err));
   });
@@ -656,7 +662,8 @@ function openAdminGate(){
   back.innerHTML = `
     <div class="modal sans">
       <h3>Panel Sibana</h3>
-      <div class="field"><label>Contraseña del equipo</label><input type="password" id="pcInput" autocomplete="current-password"></div>
+      <div class="field"><label>Usuario (déjalo vacío si usas la contraseña del equipo)</label><input type="text" id="pcUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
+      <div class="field"><label>Contraseña</label><input type="password" id="pcInput" autocomplete="current-password"></div>
       <div class="err sans" id="pcErr"></div>
       <div class="nav-row">
         <button class="btn ghost" id="pcCancel">Cancelar</button>
@@ -667,17 +674,18 @@ function openAdminGate(){
   document.getElementById('pcCancel').addEventListener('click', ()=> back.remove());
   document.getElementById('pcOk').addEventListener('click', ()=>{
     const val = document.getElementById('pcInput').value;
+    const usuario = normalizarUsuario(document.getElementById('pcUser').value);
     const okBtn = document.getElementById('pcOk');
     const errBox = document.getElementById('pcErr');
     if(!val){ errBox.classList.add('show'); errBox.textContent = 'Escribe la contraseña.'; return; }
     okBtn.disabled = true;
-    firebase.auth().signInWithEmailAndPassword(TEAM_EMAIL, val).then(()=>{
+    firebase.auth().signInWithEmailAndPassword(usuario ? emailDeUsuario(usuario) : TEAM_EMAIL, val).then(()=>{
       back.remove();
       adminMode = true;
       loadAdminEntries();
     }).catch(err=>{
       console.error('No se pudo iniciar sesión', err);
-      errBox.classList.add('show'); errBox.textContent = 'Contraseña incorrecta.';
+      errBox.classList.add('show'); errBox.textContent = usuario ? 'Usuario o contraseña incorrectos.' : 'Contraseña incorrecta.';
       okBtn.disabled = false;
     });
   });
@@ -692,7 +700,9 @@ async function loadAdminEntries(){
     allEntries = snap.docs.map(d=> Object.assign({_id:d.id}, d.data()));
   }catch(err){
     allEntries = [];
-    adminLoadError = "No se pudieron cargar las fichas. Revisa la conexión o las reglas de Firestore.";
+    adminLoadError = (err && err.code==='permission-denied')
+      ? "Esta cuenta no tiene acceso a las fichas de Santiago (o el usuario está desactivado). Pídele a Juan Diego que lo revise."
+      : "No se pudieron cargar las fichas. Revisa la conexión o las reglas de Firestore.";
     console.error(err);
   }
   adminLoading = false;
