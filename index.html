@@ -167,7 +167,10 @@ const COLLECTION = "sibana-consentimientos";
 // la contraseña que antes estaba escrita en este mismo archivo (visible para
 // cualquiera que viera el código fuente y sin ninguna protección real a nivel
 // de base de datos).
-const TEAM_EMAIL = 'equipo@sibanasantiago.app';
+// Es del Gmail de Sibana (lo que va entre "+" y "@" Gmail lo ignora). Antes
+// era equipo@sibanasantiago.app, un dominio que no es de Sibana: quien lo
+// comprara podía pedir "olvidé mi contraseña" y quedarse con la cuenta.
+const TEAM_EMAIL = 'sibana.cl+equipo@gmail.com';
 
 let db, FIREBASE_READY = false;
 try{
@@ -185,6 +188,13 @@ try{
 let teamAuthed = false;
 if(FIREBASE_READY){
   firebase.auth().onAuthStateChanged(user=>{
+    // Una sesión de una cuenta que ya no se usa (la del correo viejo) se
+    // cierra: vuelve a la sesión anónima y el Panel pide la contraseña.
+    if(user && !user.isAnonymous && (user.email||'').toLowerCase()!==TEAM_EMAIL){
+      teamAuthed = false;
+      firebase.auth().signOut().catch(err=> console.error(err));
+      return;
+    }
     teamAuthed = !!(user && !user.isAnonymous);
     if(!user) firebase.auth().signInAnonymously().catch(err=> console.error('No se pudo abrir sesión anónima', err));
   });
