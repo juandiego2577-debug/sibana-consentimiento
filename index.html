@@ -680,7 +680,7 @@ function openAdminGate(){
   back.innerHTML = `
     <div class="modal sans">
       <h3>Panel Sibana</h3>
-      ${conUsuario ? `<div class="field"><label>Correo (déjalo vacío si usas la contraseña del equipo)</label><input type="email" id="pcUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"></div>` : ''}
+      ${conUsuario ? `<div class="field"><label>Correo electrónico</label><input type="email" id="pcUser" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false"></div>` : ''}
       <div class="field"><label>${conUsuario ? 'Contraseña' : 'Contraseña del equipo'}</label><input type="password" id="pcInput" autocomplete="current-password"></div>
       <div class="err sans" id="pcErr"></div>
       <div class="nav-row">
