@@ -177,11 +177,11 @@ const TEAM_EMAIL = 'sibana.cl+equipo@gmail.com';
 // Firebase.
 // Mientras se preparan los usuarios personales, el Panel muestra la entrada
 // de siempre (solo contraseña). Al lanzarlos, poner esto en true.
-const USUARIOS_PERSONALES_VISIBLES = false;
+const USUARIOS_PERSONALES_VISIBLES = true;
 // Contraseña compartida del equipo: en false desde el lanzamiento de las
 // cuentas propias (igual que CUENTAS_COMPARTIDAS_EQUIPO en la Agenda). Con
 // el correo vacío se prueba la cuenta de dueños (y la del equipo si sigue).
-const CONTRASENA_EQUIPO_ACTIVA = true;
+const CONTRASENA_EQUIPO_ACTIVA = false;
 const DUENOS_EMAIL = 'juandiego2577+duenos@gmail.com';
 function normalizarUsuario(u){
   return String(u||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
