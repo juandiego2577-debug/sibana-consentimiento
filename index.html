@@ -178,6 +178,11 @@ const TEAM_EMAIL = 'sibana.cl+equipo@gmail.com';
 // Mientras se preparan los usuarios personales, el Panel muestra la entrada
 // de siempre (solo contraseña). Al lanzarlos, poner esto en true.
 const USUARIOS_PERSONALES_VISIBLES = false;
+// Contraseña compartida del equipo: en false desde el lanzamiento de las
+// cuentas propias (igual que CUENTAS_COMPARTIDAS_EQUIPO en la Agenda). Con
+// el correo vacío se prueba la cuenta de dueños (y la del equipo si sigue).
+const CONTRASENA_EQUIPO_ACTIVA = true;
+const DUENOS_EMAIL = 'juandiego2577+duenos@gmail.com';
 function normalizarUsuario(u){
   return String(u||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 }
@@ -692,7 +697,10 @@ function openAdminGate(){
     const errBox = document.getElementById('pcErr');
     if(!val){ errBox.classList.add('show'); errBox.textContent = 'Escribe la contraseña.'; return; }
     okBtn.disabled = true;
-    firebase.auth().signInWithEmailAndPassword(usuario || TEAM_EMAIL, val).then(()=>{
+    const correos = usuario ? [usuario] : (CONTRASENA_EQUIPO_ACTIVA ? [TEAM_EMAIL, DUENOS_EMAIL] : [DUENOS_EMAIL]);
+    const probar = i=> firebase.auth().signInWithEmailAndPassword(correos[i], val)
+      .catch(err=> i+1 < correos.length ? probar(i+1) : Promise.reject(err));
+    probar(0).then(()=>{
       back.remove();
       adminMode = true;
       loadAdminEntries();
@@ -704,6 +712,16 @@ function openAdminGate(){
   });
 }
 
+// Cierra la sesión que no sirve para el Panel y vuelve a pedir correo y
+// contraseña (ojo: es la misma sesión de la Agenda en este navegador, pero si
+// no tiene acceso a las fichas tampoco lo tiene a la Agenda).
+function entrarConOtraCuenta(){
+  firebase.auth().signOut().catch(err=>console.error(err)).finally(()=>{
+    teamAuthed = false; adminMode = false; adminLoadError = null;
+    renderApp();
+    openAdminGate();
+  });
+}
 async function loadAdminEntries(){
   adminLoading = true; adminLoadError = null;
   renderApp();
@@ -714,7 +732,7 @@ async function loadAdminEntries(){
   }catch(err){
     allEntries = [];
     adminLoadError = (err && err.code==='permission-denied')
-      ? "Esta cuenta no tiene acceso a las fichas de Santiago (o el usuario está desactivado). Pídele a Juan Diego que lo revise."
+      ? "Esta cuenta no tiene acceso a las fichas de Santiago (todavía no la aprueban, está desactivada o es la contraseña vieja del equipo). Entra con tu correo y tu contraseña, o pídele a Juan Diego que lo revise."
       : "No se pudieron cargar las fichas. Revisa la conexión o las reglas de Firestore.";
     console.error(err);
   }
@@ -771,7 +789,7 @@ function renderAdmin(){
   if(adminLoading){
     body = `<div class="empty-admin">Cargando fichas…</div>`;
   } else if(adminLoadError){
-    body = `<div class="empty-admin">${esc(adminLoadError)}</div>`;
+    body = `<div class="empty-admin">${esc(adminLoadError)}${teamAuthed ? `<br><br><button class="btn ghost" onclick="entrarConOtraCuenta()">Entrar con otra cuenta</button>` : ''}</div>`;
   } else {
     const list = filteredEntries();
     if(list.length===0){
