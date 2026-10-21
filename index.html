@@ -963,6 +963,7 @@ let adminLoading = false;
 let adminLoadError = null;
 let searchTerm = "";
 const abiertas = new Set(); // fichas desplegadas (siguen abiertas al buscar)
+const DESDE_AGENDA = /[?&]panel(=|&|$)/.test(location.search);
 
 function openAdminGate(){
   // Si este dispositivo ya inició sesión con la cuenta del equipo (por
@@ -1179,7 +1180,7 @@ function renderAdmin(){
   app.innerHTML = `
     <div class="admin-top"><div class="admin-top-in">
       <div class="marca"><img class="logo" src="${LOGO_SRC}" alt="Sibana"><span class="titulo">PANEL SIBANA</span></div>
-      <button type="button" class="btn ghost chico" id="adminClose">Cerrar panel</button>
+      <button type="button" class="btn ghost chico" id="adminClose">${DESDE_AGENDA ? 'Volver a la agenda' : 'Cerrar panel'}</button>
     </div></div>
     <main class="admin-view">
       <div class="admin-head"><h1>Fichas de consentimiento</h1><div class="cuenta" id="cuenta"></div></div>
@@ -1187,7 +1188,12 @@ function renderAdmin(){
     </main>
   `;
   pintarLista();
-  document.getElementById('adminClose').addEventListener('click', ()=>{ adminMode=false; deleteError=null; renderApp(); window.scrollTo(0,0); });
+  document.getElementById('adminClose').addEventListener('click', ()=>{
+    // Abierto desde la agenda (pestaña nueva): se cierra esa pestaña y se
+    // vuelve a la agenda. Si el navegador no deja cerrarla, se va a la agenda.
+    if(DESDE_AGENDA){ window.close(); setTimeout(()=>{ location.href = '../agenda-sibana/'; }, 300); return; }
+    adminMode=false; deleteError=null; renderApp(); window.scrollTo(0,0);
+  });
   const si = document.getElementById('searchInput');
   if(si) si.addEventListener('input', (e)=>{ searchTerm = e.target.value; pintarLista(); });
   document.querySelectorAll('[data-sede-filtro]').forEach(btn=>{
@@ -1218,7 +1224,7 @@ function renderAdmin(){
 renderApp();
 // "?panel" en la dirección (el enlace de la agenda): abre el Panel apenas se
 // sabe si este navegador ya tiene sesión.
-if(/[?&]panel(=|&|$)/.test(location.search)) authLista.then(openAdminGate);
+if(DESDE_AGENDA) authLista.then(openAdminGate);
 </script>
 </body>
 </html>
