@@ -115,6 +115,10 @@
   .entry-top{display:flex;justify-content:space-between;align-items:center;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;gap:10px;}
   .entry-name{font-size:15px;color:var(--cream);}
   .entry-meta{font-size:11.5px;color:var(--muted);text-align:right;}
+  .sede-chip{display:inline-block;font-size:10.5px;letter-spacing:.04em;color:var(--gold);border:1px solid var(--gold-dim);border-radius:10px;padding:1px 8px;margin-right:4px;}
+  .sede-filtro{display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 12px;}
+  .sede-filtro .btn{font-size:12px;padding:6px 12px;}
+  .sede-filtro .btn.activo{border-color:var(--gold);color:var(--gold);}
   .entry-body{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12.5px;color:var(--cream);}
   .entry.open .entry-body{display:block;}
   .kv{display:grid;grid-template-columns:150px 1fr;gap:4px 10px;margin-bottom:3px;}
@@ -162,7 +166,21 @@ const FIREBASE_CONFIG = {
 
 // Colección propia para las fichas de consentimiento, separada de "sibana-agenda"
 // pero con un nombre consistente dentro del mismo proyecto Firebase.
-const COLLECTION = "sibana-consentimientos";
+// Sedes (oct 2026): la MISMA ficha sirve a Santiago y a Viña del Mar. Con
+// "?sede=vina" al final de la dirección (el QR de Viña) la ficha se guarda en
+// la colección de Viña y la Ciudad viene puesta. Sin nada, Santiago, como
+// siempre. El Panel Sibana muestra las fichas de todas las sedes a las que la
+// cuenta tiene acceso (los dueños, todas), cada una marcada con su sede.
+const SEDES_FICHA = {
+  santiago: {nombre: 'Santiago', col: 'sibana-consentimientos', ciudad: ''},
+  vina: {nombre: 'Viña del Mar', col: 'sibana-consentimientos-vina', ciudad: 'Viña del Mar'},
+};
+const SEDE_FICHA_ID = (function(){
+  const m = /[?&]sede=([a-z]+)/.exec(location.search);
+  return m && SEDES_FICHA[m[1]] ? m[1] : 'santiago';
+})();
+const SEDE_FICHA = SEDES_FICHA[SEDE_FICHA_ID];
+const COLLECTION = SEDE_FICHA.col;
 // Misma cuenta de equipo que usa la Agenda para el "Panel Sibana" — reemplaza
 // la contraseña que antes estaba escrita en este mismo archivo (visible para
 // cualquiera que viera el código fuente y sin ninguna protección real a nivel
@@ -225,7 +243,7 @@ const STEPS = ["Datos","Historial","Técnica","Cuidados","Firma"];
 const state = {
   step: 0,
   fecha: new Date().toISOString().slice(0,10),
-  ciudad:"", nombre:"", rut:"", edad:"", telefono:"", email:"",
+  ciudad:SEDE_FICHA.ciudad, nombre:"", rut:"", edad:"", telefono:"", email:"",
   alergias:null, alergias_detalle:"",
   diabetes:null, hipertension:null, vih:null, hepatitis:null, enf_inmunes:null,
   cond_piel:null, cond_piel_detalle:"",
@@ -641,7 +659,7 @@ function renderApp(){
   }
   const steps = [renderStep0, renderStep1, renderStep2, renderStep3, renderStep4];
   app.innerHTML = `
-    <div class="brand"><div class="mark">Sibana</div><div class="sub">FICHA Y CONSENTIMIENTO INFORMADO</div></div>
+    <div class="brand"><div class="mark">Sibana</div><div class="sub">FICHA Y CONSENTIMIENTO INFORMADO${SEDE_FICHA_ID!=='santiago' ? ' · ' + esc(SEDE_FICHA.nombre.toUpperCase()) : ''}</div></div>
     <div class="wrap">
       ${progressHtml()}
       ${steps[state.step]()}
@@ -663,6 +681,8 @@ function renderApp(){
 // ---------- Admin panel ----------
 let adminMode = false;
 let allEntries = [];
+let sedesCargadas = []; // sedes cuyas fichas se pudieron leer con esta cuenta
+let filtroSede = '';    // '' = todas
 let adminLoading = false;
 let adminLoadError = null;
 let searchTerm = "";
@@ -727,12 +747,27 @@ async function loadAdminEntries(){
   renderApp();
   try{
     if(!FIREBASE_READY) throw new Error('Firebase no está listo');
-    const snap = await db.collection(COLLECTION).orderBy('submittedAtClient','desc').limit(300).get();
-    allEntries = snap.docs.map(d=> Object.assign({_id:d.id}, d.data()));
+    // Cada sede por separado: la que esta cuenta no puede leer (o cuya regla
+    // todavía no está en Firebase) simplemente no aparece.
+    const ids = Object.keys(SEDES_FICHA);
+    const res = await Promise.all(ids.map(id=>
+      db.collection(SEDES_FICHA[id].col).orderBy('submittedAtClient','desc').limit(300).get()
+        .then(snap=>({id, docs: snap.docs}), err=>({id, err}))));
+    const ok = res.filter(r=>!r.err);
+    if(!ok.length){
+      const err = res[0].err;
+      console.error(err);
+      throw err;
+    }
+    res.filter(r=>r.err).forEach(r=>console.warn('Sin acceso a las fichas de ' + SEDES_FICHA[r.id].nombre, r.err));
+    sedesCargadas = ok.map(r=>r.id);
+    if(filtroSede && !sedesCargadas.includes(filtroSede)) filtroSede = '';
+    allEntries = [].concat(...ok.map(r=>r.docs.map(d=> Object.assign({_id: r.id + ':' + d.id, _docId: d.id, _sede: r.id}, d.data()))))
+      .sort((a,b)=> (b.submittedAtClient||'').localeCompare(a.submittedAtClient||''));
   }catch(err){
-    allEntries = [];
+    allEntries = []; sedesCargadas = [];
     adminLoadError = (err && err.code==='permission-denied')
-      ? "Esta cuenta no tiene acceso a las fichas de Santiago (todavía no la aprueban, está desactivada o es la contraseña vieja del equipo). Entra con tu correo y tu contraseña, o pídele a Juan Diego que lo revise."
+      ? "Esta cuenta no tiene acceso a las fichas (todavía no la aprueban, está desactivada o es la contraseña vieja del equipo). Entra con tu correo y tu contraseña, o pídele a Juan Diego que lo revise."
       : "No se pudieron cargar las fichas. Revisa la conexión o las reglas de Firestore.";
     console.error(err);
   }
@@ -766,7 +801,9 @@ function showConfirm(msg, onConfirm){
 async function deleteEntry(id){
   deleteError = null;
   try{
-    await db.collection(COLLECTION).doc(id).delete();
+    const entry = allEntries.find(e=>e._id===id);
+    if(!entry) return;
+    await db.collection(SEDES_FICHA[entry._sede].col).doc(entry._docId).delete();
     allEntries = allEntries.filter(e=>e._id!==id);
   }catch(err){
     console.error(err);
@@ -775,9 +812,10 @@ async function deleteEntry(id){
   renderApp();
 }
 function filteredEntries(){
-  if(!searchTerm.trim()) return allEntries;
+  const deSede = filtroSede ? allEntries.filter(e=>e._sede===filtroSede) : allEntries;
+  if(!searchTerm.trim()) return deSede;
   const t = searchTerm.trim().toLowerCase();
-  return allEntries.filter(e=>
+  return deSede.filter(e=>
     (e.nombre||'').toLowerCase().includes(t) ||
     (e.rut||'').toLowerCase().includes(t) ||
     (e.telefono||'').toLowerCase().includes(t)
@@ -799,7 +837,7 @@ function renderAdmin(){
         <div class="entry" data-idx="${i}">
           <div class="entry-top">
             <span class="entry-name">${esc(e.nombre)||'Sin nombre'}</span>
-            <span class="entry-meta">${fmtDate(e.submittedAtClient)}</span>
+            <span class="entry-meta">${sedesCargadas.length>1 ? `<span class="sede-chip">${esc(SEDES_FICHA[e._sede].nombre)}</span> ` : ''}${fmtDate(e.submittedAtClient)}</span>
           </div>
           <div class="entry-body">
             <div class="entry-subtitle">Datos personales</div>
@@ -849,6 +887,7 @@ function renderAdmin(){
       <div class="search-row">
         <input type="search" id="searchInput" placeholder="Buscar por nombre, RUT o teléfono" value="${esc(searchTerm)}">
       </div>
+      ${sedesCargadas.length>1 ? `<div class="sede-filtro sans">${[''].concat(sedesCargadas).map(id=>`<button type="button" class="btn ghost sans${filtroSede===id?' activo':''}" data-sede-filtro="${id}">${id ? esc(SEDES_FICHA[id].nombre) : 'Todas'}</button>`).join('')}</div>` : ''}
       <p class="step-desc sans">${filteredEntries().length} de ${allEntries.length} ficha${allEntries.length===1?'':'s'}.</p>
       ${deleteError ? `<div class="err sans show">${esc(deleteError)}</div>` : ''}
       ${body}
@@ -857,6 +896,9 @@ function renderAdmin(){
   document.getElementById('adminClose').addEventListener('click', ()=>{ adminMode=false; deleteError=null; renderApp(); });
   const si = document.getElementById('searchInput');
   si.addEventListener('input', (e)=>{ searchTerm = e.target.value; renderApp(); si.focus(); si.selectionStart = si.selectionEnd = si.value.length; });
+  document.querySelectorAll('[data-sede-filtro]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ filtroSede = btn.dataset.sedeFiltro; renderApp(); });
+  });
   document.querySelectorAll('.entry').forEach(el=>{
     el.addEventListener('click', ()=> el.classList.toggle('open'));
   });
