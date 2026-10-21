@@ -659,7 +659,7 @@ function renderApp(){
   }
   const steps = [renderStep0, renderStep1, renderStep2, renderStep3, renderStep4];
   app.innerHTML = `
-    <div class="brand"><div class="mark">Sibana</div><div class="sub">FICHA Y CONSENTIMIENTO INFORMADO${SEDE_FICHA_ID!=='santiago' ? ' · ' + esc(SEDE_FICHA.nombre.toUpperCase()) : ''}</div></div>
+    <div class="brand"><div class="mark">Sibana</div><div class="sub">FICHA Y CONSENTIMIENTO INFORMADO · ${esc(SEDE_FICHA.nombre.toUpperCase())}</div></div>
     <div class="wrap">
       ${progressHtml()}
       ${steps[state.step]()}
