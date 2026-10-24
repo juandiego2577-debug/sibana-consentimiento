@@ -1191,7 +1191,7 @@ function renderAdmin(){
   document.getElementById('adminClose').addEventListener('click', ()=>{
     // Abierto desde la agenda (pestaña nueva): se cierra esa pestaña y se
     // vuelve a la agenda. Si el navegador no deja cerrarla, se va a la agenda.
-    if(DESDE_AGENDA){ window.close(); setTimeout(()=>{ location.href = '../agenda-sibana/'; }, 300); return; }
+    if(DESDE_AGENDA){ window.close(); setTimeout(()=>{ location.href = 'https://agenda-sibana.pages.dev/'; }, 300); return; }
     adminMode=false; deleteError=null; renderApp(); window.scrollTo(0,0);
   });
   const si = document.getElementById('searchInput');
