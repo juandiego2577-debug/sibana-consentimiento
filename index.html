@@ -344,6 +344,9 @@ const USUARIOS_PERSONALES_VISIBLES = true;
 // el correo vacío se prueba la cuenta de dueños (y la del equipo si sigue).
 const CONTRASENA_EQUIPO_ACTIVA = false;
 const DUENOS_EMAIL = 'juandiego2577+duenos@gmail.com';
+// Entrada de los dueños sin correo: apagada el 24/10/2026 (ahora entran con
+// su correo, sibana.cl@gmail.com, igual que en la Agenda).
+const DUENOS_SIN_CORREO = false;
 function normalizarUsuario(u){
   return String(u||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
 }
@@ -994,9 +997,11 @@ function openAdminGate(){
     const usuario = (conUsuario ? correoDeEntrada(document.getElementById('pcUser').value) : '');
     const okBtn = document.getElementById('pcOk');
     const errBox = document.getElementById('pcErr');
+    const correos = usuario ? [usuario]
+      : [].concat(CONTRASENA_EQUIPO_ACTIVA ? [TEAM_EMAIL] : [], DUENOS_SIN_CORREO ? [DUENOS_EMAIL] : []);
+    if(!correos.length){ errBox.classList.add('show'); errBox.textContent = 'Escribe tu correo y tu contraseña.'; return; }
     if(!val){ errBox.classList.add('show'); errBox.textContent = 'Escribe la contraseña.'; return; }
     okBtn.disabled = true;
-    const correos = usuario ? [usuario] : (CONTRASENA_EQUIPO_ACTIVA ? [TEAM_EMAIL, DUENOS_EMAIL] : [DUENOS_EMAIL]);
     const probar = i=> firebase.auth().signInWithEmailAndPassword(correos[i], val)
       .catch(err=> i+1 < correos.length ? probar(i+1) : Promise.reject(err));
     probar(0).then(()=>{
